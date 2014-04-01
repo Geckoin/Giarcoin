@@ -39,7 +39,7 @@ Phase 1 - April 3, 2014
   
 Phase 2 - Deadline: May
   - Add exchange
-  - Create social network (Facebook, Twitter, Reddit(
+  - Create social network (Facebook, Twitter, Reddit)
   - Deploy of new functions, based on feedback from user
   - And more!!!
 
