@@ -1,0 +1,4 @@
+Giarcoin
+========
+
+A social coin
