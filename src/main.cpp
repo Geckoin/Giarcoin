@@ -1150,7 +1150,7 @@ unsigned int ComputeMinWork(unsigned int nBase, int64 nTime)
 }
 
 unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBlockHeader *pblock, uint64 TargetBlocksSpacingSeconds, uint64 PastBlocksMin, uint64 PastBlocksMax) {
-        /* current difficulty formula - kimoto gravity well */
+        /* current difficulty formula - kimoto gravity well - fixed version*/
         const CBlockIndex *BlockLastSolved                                = pindexLast;
         const CBlockIndex *BlockReading                                = pindexLast;
         const CBlockHeader *BlockCreating                                = pblock;
@@ -1166,38 +1166,48 @@ unsigned int static KimotoGravityWell(const CBlockIndex* pindexLast, const CBloc
         double                                EventHorizonDeviationSlow;
 
     if (BlockLastSolved == NULL || BlockLastSolved->nHeight == 0 || (uint64)BlockLastSolved->nHeight < PastBlocksMin) { return bnProofOfWorkLimit.GetCompact(); }
+	int64 LatestBlockTime = BlockLastSolved->GetBlockTime();
 
         for (unsigned int i = 1; BlockReading && BlockReading->nHeight > 0; i++) {
-                if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
-                PastBlocksMass++;
+			if (PastBlocksMax > 0 && i > PastBlocksMax) { break; }
+			PastBlocksMass++;
 
-                if (i == 1)        { PastDifficultyAverage.SetCompact(BlockReading->nBits); }
-                else                { PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
-                PastDifficultyAveragePrev = PastDifficultyAverage;
+			if (i == 1)	{ PastDifficultyAverage.SetCompact(BlockReading->nBits); }
+			else		{ PastDifficultyAverage = ((CBigNum().SetCompact(BlockReading->nBits) - PastDifficultyAveragePrev) / i) + PastDifficultyAveragePrev; }
+			PastDifficultyAveragePrev = PastDifficultyAverage;
 
-                PastRateActualSeconds                        = BlockLastSolved->GetBlockTime() - BlockReading->GetBlockTime();
-                PastRateTargetSeconds                        = TargetBlocksSpacingSeconds * PastBlocksMass;
-                PastRateAdjustmentRatio                        = double(1);
-                if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
-                if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
-                PastRateAdjustmentRatio                        = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
-                }
-                EventHorizonDeviation                        = 1 + (0.7084 * pow((double(PastBlocksMass)/double(144)), -1.228));
-                EventHorizonDeviationFast                = EventHorizonDeviation;
-                EventHorizonDeviationSlow                = 1 / EventHorizonDeviation;
+			if (LatestBlockTime < BlockReading->GetBlockTime()) {
+				if (BlockReading->nHeight > 2000)
+					LatestBlockTime = BlockReading->GetBlockTime();
+			}
+			PastRateActualSeconds = LatestBlockTime - BlockReading->GetBlockTime();
+			PastRateTargetSeconds = TargetBlocksSpacingSeconds * PastBlocksMass;
+			PastRateAdjustmentRatio = double(1);
+			if (BlockReading->nHeight > 2000) {
+				if (PastRateActualSeconds < 1) { PastRateActualSeconds = 1; }
+			}
+			else {
+				if (PastRateActualSeconds < 0) { PastRateActualSeconds = 0; }
+			}
+			if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
+				PastRateAdjustmentRatio = double(PastRateTargetSeconds) / double(PastRateActualSeconds);
+			}
+			EventHorizonDeviation = 1 + (0.7084 * pow((double(PastBlocksMass) / double(144)), -1.228));
+			EventHorizonDeviationFast = EventHorizonDeviation;
+			EventHorizonDeviationSlow = 1 / EventHorizonDeviation;
 
-                if (PastBlocksMass >= PastBlocksMin) {
-                        if ((PastRateAdjustmentRatio <= EventHorizonDeviationSlow) || (PastRateAdjustmentRatio >= EventHorizonDeviationFast)) { assert(BlockReading); break; }
-                }
-                if (BlockReading->pprev == NULL) { assert(BlockReading); break; }
-                BlockReading = BlockReading->pprev;
-        }
+			if (PastBlocksMass >= PastBlocksMin) {
+				if ((PastRateAdjustmentRatio <= EventHorizonDeviationSlow) || (PastRateAdjustmentRatio >= EventHorizonDeviationFast)) { assert(BlockReading); break; }
+			}
+			if (BlockReading->pprev == NULL) { assert(BlockReading); break; }
+			BlockReading = BlockReading->pprev;
+		}
 
-        CBigNum bnNew(PastDifficultyAverage);
-        if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
-                bnNew *= PastRateActualSeconds;
-                bnNew /= PastRateTargetSeconds;
-        }
+		CBigNum bnNew(PastDifficultyAverage);
+		if (PastRateActualSeconds != 0 && PastRateTargetSeconds != 0) {
+			bnNew *= PastRateActualSeconds;
+			bnNew /= PastRateTargetSeconds;
+		}
     if (bnNew > bnProofOfWorkLimit) { bnNew = bnProofOfWorkLimit; }
 
     /// debug print (commented out due to spamming logs when the loop above breaks)
@@ -1233,6 +1243,7 @@ unsigned int static GetNextWorkRequired(const CBlockIndex* pindexLast, const CBl
 
     //DO NOT CHECK IN THIS HACK
     //return nProofOfWorkLimit;
+	
     return GetNextWorkRequired_V2(pindexLast, pblock); // KGW
 }
 

@@ -1,4 +1,8 @@
-Giarcoin
+Giarcoin v 1.1
+
+What's new:
+ - Fixed KGW exploit
+ - Added main nodes on net.cpp
 ================================
 
 http://www.giarcoin.com
