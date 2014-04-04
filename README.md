@@ -5,7 +5,8 @@ What's new:
  - Fixed KGW exploit
  - Added main nodes on net.cpp
  - Added missing files
- - 
+ 
+
 http://www.giarcoin.com
 
 Copyright (c) 2009-2013 Bitcoin Developers
@@ -34,18 +35,4 @@ default RPC port 55983
 Development plan
 -------
 
-Phase 0 - April 2, 2014
-  - Release Windows and Linux wallet on protected .zip file
-  - Release Source on protected .zip file
-
-Phase 1 - April 3, 2014
-  - Release Password
-  - Release Source on github
-  
-Phase 2 - Deadline: May
-  - Add exchange
-  - Create social network (Facebook, Twitter, Reddit)
-  - Deploy of new functions, based on feedback from user
-  - And more!!!
-
-Phase 3 - Coming later
+http://giarcoin.com/Developmentplans.pdf
