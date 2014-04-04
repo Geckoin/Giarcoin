@@ -1,11 +1,11 @@
 Giarcoin v 1.1
+================================
 
 What's new:
  - Fixed KGW exploit
  - Added main nodes on net.cpp
  - Added missing files
-================================
-
+ - 
 http://www.giarcoin.com
 
 Copyright (c) 2009-2013 Bitcoin Developers
